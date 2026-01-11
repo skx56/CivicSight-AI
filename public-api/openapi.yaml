@@ -1,0 +1,95 @@
+openapi: 3.0.0
+info:
+  title: CivicSight AI Public API
+  description: Public API for crowdsourced infrastructure auditing.
+  version: 1.0.0
+servers:
+  - url: https://api.civicsight.ai/v1
+    description: Production Server (Mock)
+paths:
+  /analyze:
+    post:
+      summary: Analyze Infrastructure Image
+      description: Submit an image for AI analysis using GPT-4o Vision.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                image_url:
+                  type: string
+                  description: Public URL or Base64 of the image.
+                location:
+                  type: object
+                  properties:
+                    lat:
+                      type: number
+                    long:
+                      type: number
+      responses:
+        '200':
+          description: Analysis Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  issue_type:
+                    type: string
+                  severity_score:
+                    type: integer
+                  materials_required:
+                    type: array
+                    items:
+                      type: string
+                  estimated_labor_hours:
+                    type: number
+  /reports/spatial:
+    get:
+      summary: Get Spatial Reports
+      description: Retrieve reports within a bounding box.
+      parameters:
+        - name: bbox
+          in: query
+          description: Bounding box (minLon,minLat,maxLon,maxLat)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: GeoJSON FeatureCollection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: FeatureCollection
+                  features:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          example: Feature
+                        geometry:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                              example: Point
+                            coordinates:
+                              type: array
+                              items:
+                                type: number
+                        properties:
+                          type: object
+                          properties:
+                             issue_type:
+                               type: string
+                             severity:
+                               type: integer

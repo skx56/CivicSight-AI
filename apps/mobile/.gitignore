@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# env files
+.env
+.env.*
+!.env.example
+
+# build
+dist/
+build/
+.next/
+out/
+
+# turbo
+.turbo/
+
+# misc
+.DS_Store
