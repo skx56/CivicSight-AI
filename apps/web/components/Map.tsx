@@ -27,7 +27,7 @@ function MapEvents({ onClick }: { onClick?: (lat: number, lon: number) => void }
     return null;
 }
 
-export default function MapView({ reports, onMapClick }: { reports: Report[], onMapClick?: (lat: number, lon: number) => void }) {
+export default function MapView({ reports, onMapClick, onReportSelect }: { reports: Report[], onMapClick?: (lat: number, lon: number) => void, onReportSelect?: (r: Report) => void }) {
     // Default center (San Francisco for demo)
     const center: [number, number] = [37.7749, -122.4194];
 
@@ -54,7 +54,7 @@ export default function MapView({ reports, onMapClick }: { reports: Report[], on
                 return (
                     <Marker key={report.id} position={[lat, lon]} icon={icon}>
                         <Popup className="glass-popup">
-                            <div className="text-gray-900">
+                            <div className="text-gray-900 cursor-pointer" onClick={() => onReportSelect?.(report)}>
                                 <strong className="uppercase block text-sm font-bold text-emerald-600">{report.issue_type}</strong>
                                 <span className="text-xs">Severity: {report.severity_score}/10</span>
                                 <br />

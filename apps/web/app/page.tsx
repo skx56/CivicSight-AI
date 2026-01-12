@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [reports, setReports] = useState<Report[]>([]);
   const [stats, setStats] = useState({ totalSavings: 0, activeIssues: 0 });
   const [manualCost, setManualCost] = useState(150);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -44,10 +45,33 @@ export default function Dashboard() {
       }
     };
     fetchReports();
+
+    // Subscribe to Supabase Realtime
     const channel = supabase.channel('realtime_reports')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reports' }, () => fetchReports())
       .subscribe();
-    return () => { supabase.removeChannel(channel); }
+
+    // Poll Local API (Bridge for Mobile App)
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/reports');
+        if (res.ok) {
+          const localData = await res.json();
+          setReports(prev => {
+            // Deduplicate by ID
+            const map = new Map();
+            [...prev, ...localData].forEach(r => map.set(r.id, r));
+            // Sort new to old
+            return Array.from(map.values()).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          });
+        }
+      } catch (e) { console.error("Local poll error", e); }
+    }, 2000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    }
   }, []);
 
   // Recalculate stats whenever reports or manualCost changes
@@ -273,7 +297,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 min-h-0 relative z-0">
           {/* Main Map Panel */}
           <div className={`md:col-span-2 glass-card p-1 rounded-2xl h-full relative overflow-hidden transition-all duration-500 ${isWizardOpen && wizardStep === 'location' ? 'ring-4 ring-emerald-500/50' : ''}`}>
-            <MapView reports={reports} onMapClick={handleMapClick} />
+            <MapView reports={reports} onMapClick={handleMapClick} onReportSelect={setSelectedReport} />
 
             {isWizardOpen && wizardStep === 'location' && (
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[999] bg-emerald-500 text-white px-6 py-2 rounded-full font-bold shadow-lg animate-bounce">
@@ -343,7 +367,7 @@ export default function Dashboard() {
                 {[...reports]
                   .sort((a, b) => b.severity_score - a.severity_score) // Sort by Severity Descending
                   .map(r => (
-                    <div key={r.id} className="flex gap-3 items-center p-3 hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10 group">
+                    <div key={r.id} onClick={() => setSelectedReport(r)} className="flex gap-3 items-center p-3 hover:bg-white/5 rounded-xl transition-all border border-transparent hover:border-white/10 group cursor-pointer active:scale-[0.98]">
                       <div className={`w-1.5 h-10 rounded-full ${r.severity_score >= 8 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]' : 'bg-emerald-500'}`} />
                       <img src={r.image_url} className="w-12 h-12 rounded-lg object-cover bg-gray-700 group-hover:scale-105 transition-transform" alt="thumb" />
                       <div className="flex-1 min-w-0">
@@ -366,7 +390,80 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* --- WIZARD MODAL (MOVED OUTSIDE CONTENT WRAPPER) --- */}
+      {/* --- REPORT DETAILS MODAL --- */}
+      {selectedReport && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={() => setSelectedReport(null)}>
+          <div className="glass-card w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-emerald-500/30 shadow-2xl flex flex-col md:flex-row bg-[#0f172a]" onClick={e => e.stopPropagation()}>
+
+            {/* Image Side */}
+            <div className="w-full md:w-1/2 p-4 h-64 md:h-auto">
+              <img src={selectedReport.image_url} alt={selectedReport.issue_type} className="w-full h-full object-cover rounded-2xl shadow-lg border border-white/10" />
+            </div>
+
+            {/* Details Side */}
+            <div className="w-full md:w-1/2 p-8 flex flex-col">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className={`w-3 h-3 rounded-full ${selectedReport.severity_score >= 8 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]' : 'bg-emerald-500'}`} />
+                    <span className="text-xs text-gray-400 uppercase tracking-widest font-bold">Issue Details</span>
+                  </div>
+                  <h2 className="text-3xl font-bold text-white mb-2">{selectedReport.issue_type}</h2>
+                  <p className="text-gray-400 text-sm font-mono">{selectedReport.id}</p>
+                </div>
+                <button onClick={() => setSelectedReport(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                  <span className="text-xs text-gray-500 uppercase tracking-widest block mb-1">Severity</span>
+                  <div className="flex items-end gap-2">
+                    <span className={`text-4xl font-bold ${selectedReport.severity_score >= 8 ? 'text-red-500' : 'text-emerald-500'}`}>{selectedReport.severity_score}</span>
+                    <span className="text-gray-500 mb-1">/ 10</span>
+                  </div>
+                </div>
+                <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                  <span className="text-xs text-gray-500 uppercase tracking-widest block mb-1">Est. Labor</span>
+                  <div className="flex items-end gap-2">
+                    <span className="text-4xl font-bold text-white">{selectedReport.estimated_labor_hours}</span>
+                    <span className="text-gray-500 mb-1">hours</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <span className="text-xs text-gray-500 uppercase tracking-widest block mb-4">Required Materials</span>
+                <div className="flex flex-wrap gap-2">
+                  {selectedReport.materials_required?.map((m: string, i: number) => (
+                    <span key={i} className="px-3 py-1.5 bg-emerald-900/30 text-emerald-300 border border-emerald-500/30 rounded-lg text-sm font-medium">
+                      {m}
+                    </span>
+                  )) || <span className="text-gray-600 italic">No materials specified</span>}
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <span className="text-xs text-gray-500 uppercase tracking-widest block mb-2">Location Coordinates</span>
+                <div className="font-mono text-gray-300 bg-black/40 p-3 rounded-lg border border-white/5 flex justify-between items-center">
+                  <span>
+                    {selectedReport.location?.coordinates[1]?.toFixed(6)}, {selectedReport.location?.coordinates[0]?.toFixed(6)}
+                  </span>
+                  <button className="text-xs text-emerald-500 hover:text-emerald-400 uppercase font-bold tracking-wider">Copy</button>
+                </div>
+              </div>
+
+              <button className="mt-auto w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-emerald-500/25 flex items-center justify-center gap-2">
+                <span>Dispatch Maintenance Crew</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- WIZARD MODAL (Existing) --- */}
       {isWizardOpen && (
         <div className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${wizardStep === 'location' ? 'bg-transparent pointer-events-none items-end justify-end p-8 z-[800]' : 'bg-black/60 backdrop-blur-sm z-[1000]'}`}>
           <div className={`glass-card p-8 w-full max-w-md rounded-2xl border border-emerald-500/30 shadow-[0_0_50px_rgba(16,185,129,0.2)] pointer-events-auto transition-all duration-500 ${wizardStep === 'location' ? 'mr-0 mb-0 ring-2 ring-emerald-500/50' : ''}`}>
