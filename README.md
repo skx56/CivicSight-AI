@@ -1,27 +1,11 @@
 # CivicSight AI
 
-**The First-Place Winner of the Metropolitan Infrastructure Hackathon.**
-
 CivicSight AI is an end-to-end crowdsourced infrastructure auditing platform. It leverages specific AI agents (GPT-4o Vision) to classify, analyze, and estimate repair costs for urban defects.
 
-## 🏆 Bounty Optimization
 - **Startup-Ready**: Full Monorepo, Supabase Backend, Deployment Ready.
 - **Technical Execution**: React Native (Expo) + Next.js + Turborepo + PostGIS.
 - **Product Design**: Glassmorphic Bento UI with TailwindCSS & NativeWind.
 - **Developer Tools**: Public OpenAPI Spec.
-
-## 🚀 Tech Stack
-```mermaid
-graph TD
-    A[Mobile App (Expo)] -->|Image Upload| B[Supabase Storage]
-    A -->|Analysis Request| C[Supabase Edge Function]
-    C -->|GPT-4o Vision| D((OpenAI))
-    C -->|JSON Result| A
-    A -->|Save Report| E[Supabase DB (PostGIS)]
-    F[Web Dashboard (Next.js)] -->|Read| E
-    F -->|Maps| G[Leaflet]
-    F -->|Analytics| H[Recharts]
-```
 
 ## 📦 Monorepo Structure
 - `apps/mobile`: The Reporter App (React Native, NativeWind)
