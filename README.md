@@ -26,6 +26,21 @@ CivicSight AI connects field reporting with civic oversight. The system combines
 
 The repository is a TypeScript monorepo with mobile, web, shared package, and Supabase function workspaces. Turbo coordinates development while shared Zod schemas keep client and backend contracts aligned.
 
+## Architecture Diagram
+
+```mermaid
+flowchart TD
+  Mobile["Expo Mobile Reporter"] --> Shared["Shared Zod Schemas"]
+  Web["Next.js Civic Dashboard"] --> Shared
+  Shared --> Supabase["Supabase Data Layer"]
+  Mobile --> Capture["Camera, Location, and Offline Queue"]
+  Capture --> Supabase
+  Supabase --> Functions["Supabase Functions"]
+  Functions --> Analysis["Image Analysis Workflow"]
+  Supabase --> Web
+  Web --> Reports["Maps, Charts, and PDF Reports"]
+```
+
 ## Technology Stack
 
 - Expo and React Native for the mobile application.
