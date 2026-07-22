@@ -39,6 +39,17 @@ flowchart TD
   Functions --> Analysis["Image Analysis Workflow"]
   Supabase --> Web
   Web --> Reports["Maps, Charts, and PDF Reports"]
+
+  classDef inputs fill:#FEE2E2,stroke:#DC2626,color:#7F1D1D,stroke-width:2px;
+  classDef process fill:#ECFCCB,stroke:#65A30D,color:#365314,stroke-width:2px;
+  classDef data fill:#DBEAFE,stroke:#2563EB,color:#1E3A8A,stroke-width:2px;
+  classDef agent fill:#FAE8FF,stroke:#C026D3,color:#701A75,stroke-width:2px;
+  classDef output fill:#DCFCE7,stroke:#16A34A,color:#14532D,stroke-width:2px;
+  class Mobile,Web inputs;
+  class Shared,Capture,Functions process;
+  class Supabase data;
+  class Analysis,Reports output;
+  linkStyle default stroke:#52525B,stroke-width:2px;
 ```
 
 ## Technology Stack
