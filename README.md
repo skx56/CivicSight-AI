@@ -1,46 +1,58 @@
 # CivicSight AI
 
-CivicSight AI is an end-to-end crowdsourced infrastructure auditing platform. It leverages specific AI agents (GPT-4o Vision) to classify, analyze, and estimate repair costs for urban defects.
+<p align="center">
+<img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge" />
+  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge" />
+  <img alt="React Native" src="https://img.shields.io/badge/React%20Native-61DAFB?style=for-the-badge" />
+  <img alt="Expo" src="https://img.shields.io/badge/Expo-000020?style=for-the-badge" />
+  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge" />
+  <img alt="Zod" src="https://img.shields.io/badge/Zod-374151?style=for-the-badge" />
+</p>
 
-- **Startup-Ready**: Full Monorepo, Supabase Backend, Deployment Ready.
-- **Technical Execution**: React Native (Expo) + Next.js + Turborepo + PostGIS.
-- **Product Design**: Glassmorphic Bento UI with TailwindCSS & NativeWind.
-- **Developer Tools**: Public OpenAPI Spec.
+<p align="center">
+  <strong>A civic issue reporting platform with mobile capture, web dashboards, offline-aware workflows, and shared data contracts.</strong>
+</p>
 
-## 📦 Monorepo Structure
-- `apps/mobile`: The Reporter App (React Native, NativeWind)
-- `apps/web`: The Monitor Dashboard (Next.js 14, Tailwind)
-- `packages/shared`: Shared Types and Clients
-- `supabase`: Database Migrations & Edge Functions
-- `public-api`: OpenAPI Specification
+CivicSight AI connects field reporting with civic oversight. The system combines a mobile app for capturing issues, a web dashboard for visualization and reporting, shared schemas for consistency, and Supabase functions for backend processing.
 
-## 💎 Features
-### 📱 The Reporter (Mobile)
-- **Point & analyze**: Instant AI classification of potholes, graffiti, etc.
-- **Auto-Geotagging**: Precise location tracking.
-- **Labor Estimation**: AI-predicted repair hours.
+## Core Capabilities
 
-### 🖥️ The Monitor (Web)
-- **Global Map**: Clustering of defects using React-Leaflet.
-- **Impact Analytics**: Fiscal savings calculator.
-- **Real-time Feed**: Live updates via Supabase Realtime.
+- Provides mobile issue capture with camera, location, file, and offline queue support.
+- Renders a web dashboard with maps, charts, exports, and issue review.
+- Shares typed schemas across web, mobile, and backend layers.
+- Uses Supabase functions for image analysis and data workflows.
 
-## 🛠️ Setup
-1. **Install Dependencies**:
-    ```bash
-    npm install --legacy-peer-deps
-    ```
-2. **Setup Supabase**:
-    - Link your project: `npx supabase link`
-    - Apply Migrations: `npx supabase db push`
-    - Set Secrets: `npx supabase secrets set OPENAI_API_KEY=...`
-3. **Run Locally**:
-    ```bash
-    npx turbo dev
-    ```
+## Technical Architecture
 
-## 💼 Business Model
-**CivicSight AI** operates on a B2G (Business to Government) SaaS model:
-- **City Subscription**: Municipalities pay for the Dashboard access and aggregated data.
-- **Enterprise Integration**: Construction firms pay for API access to bid on verified repair jobs.
-- **Public Access**: Free mobile app for citizens to encourage reporting.
+The repository is a TypeScript monorepo with mobile, web, shared package, and Supabase function workspaces. Turbo coordinates development while shared Zod schemas keep client and backend contracts aligned.
+
+## Technology Stack
+
+- Expo and React Native for the mobile application.
+- Next.js and React for the web dashboard.
+- Supabase for backend data and functions.
+- Zod for shared validation schemas.
+- Leaflet, Recharts, jsPDF, and offline queue utilities for reporting workflows.
+
+## Repository Structure
+
+- `apps/mobile` - Expo mobile application.
+- `apps/web` - Next.js dashboard.
+- `packages/shared` - Shared schemas and Supabase client.
+- `supabase/functions/analyze-image` - Server-side image analysis workflow.
+- `turbo.json` - Monorepo orchestration configuration.
+- `package.json` - Workspace-level scripts.
+
+## Getting Started
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+## Professional Context
+
+This project demonstrates cross-platform product engineering, civic-tech workflow design, and typed monorepo architecture.
